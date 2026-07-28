@@ -1,6 +1,6 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { useAuth } from '../lib/Authenticator'
-import { subscribeToTasks, addTask, toggleTask, deleteTask } from '../lib/tasks'
+import { subscribeToTasks, addTask, toggleTask, updateTask, deleteTask } from '../lib/tasks'
 import type { Task } from '../types'
 
 function TasksPage() {
@@ -11,6 +11,9 @@ function TasksPage() {
   const [tasksError, setTasksError] = useState('')
   const [newTitle, setNewTitle] = useState('')
   const [adding, setAdding] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const editInputRef = useRef<HTMLInputElement>(null)
   const [sendingEmail, setSendingEmail] = useState(false)
   const [emailMsg, setEmailMsg] = useState('')
 
@@ -60,6 +63,22 @@ function TasksPage() {
   async function handleDelete(taskId: string) {
     await deleteTask(taskId)
     // onSnapshot actualiza la UI automáticamente
+  }
+
+  function startEdit(task: Task) {
+    setEditingId(task.id)
+    setEditTitle(task.title)
+    setTimeout(() => editInputRef.current?.focus(), 0)
+  }
+
+  async function handleEdit(taskId: string) {
+    const trimmed = editTitle.trim()
+    if (trimmed) await updateTask(taskId, trimmed)
+    setEditingId(null)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
   }
 
   async function handleSendEmail() {
@@ -149,7 +168,19 @@ function TasksPage() {
               {pending.map(task => (
                 <li key={task.id} className="task-item">
                   <input type="checkbox" checked={false} onChange={() => handleToggle(task)} />
-                  <span>{task.title}</span>
+                  {editingId === task.id ? (
+                    <input
+                      ref={editInputRef}
+                      className="task-edit-input"
+                      value={editTitle}
+                      onChange={e => setEditTitle(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleEdit(task.id); if (e.key === 'Escape') cancelEdit() }}
+                      onBlur={() => handleEdit(task.id)}
+                    />
+                  ) : (
+                    <span onDoubleClick={() => startEdit(task)}>{task.title}</span>
+                  )}
+                  <button className="btn-edit" onClick={() => startEdit(task)} title="Editar">✏️</button>
                   <button onClick={() => handleDelete(task.id)}>🗑</button>
                 </li>
               ))}
@@ -165,7 +196,19 @@ function TasksPage() {
               {completed.map(task => (
                 <li key={task.id} className="task-item task-item--done">
                   <input type="checkbox" checked={true} onChange={() => handleToggle(task)} />
-                  <span className="done">{task.title}</span>
+                  {editingId === task.id ? (
+                    <input
+                      ref={editInputRef}
+                      className="task-edit-input"
+                      value={editTitle}
+                      onChange={e => setEditTitle(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleEdit(task.id); if (e.key === 'Escape') cancelEdit() }}
+                      onBlur={() => handleEdit(task.id)}
+                    />
+                  ) : (
+                    <span className="done" onDoubleClick={() => startEdit(task)}>{task.title}</span>
+                  )}
+                  <button className="btn-edit" onClick={() => startEdit(task)} title="Editar">✏️</button>
                   <button onClick={() => handleDelete(task.id)}>🗑</button>
                 </li>
               ))}

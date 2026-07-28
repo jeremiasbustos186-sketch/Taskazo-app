@@ -57,6 +57,11 @@ export async function toggleTask(taskId: string, completed: boolean): Promise<vo
   await updateDoc(doc(db, COLLECTION, taskId), { completed })
 }
 
+// Editar el título de una tarea
+export async function updateTask(taskId: string, title: string): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, taskId), { title })
+}
+
 // Eliminar una tarea
 export async function deleteTask(taskId: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTION, taskId))

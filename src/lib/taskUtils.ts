@@ -14,3 +14,8 @@ export function filterByStatus(tasks: Task[], completed: boolean): Task[] {
 export function countCompleted(tasks: Task[]): number {
   return tasks.filter(t => t.completed).length
 }
+
+/** Aplica un nuevo título a una tarea (lógica pura, sin Firestore) */
+export function applyTitleUpdate(task: Task, newTitle: string): Task {
+  return { ...task, title: newTitle.trim() }
+}

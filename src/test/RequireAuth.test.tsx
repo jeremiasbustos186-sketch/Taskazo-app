@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isValidTitle, filterByStatus, countCompleted } from '../lib/taskUtils'
+import { isValidTitle, filterByStatus, countCompleted, applyTitleUpdate } from '../lib/taskUtils'
 import type { Task } from '../types'
 
 const mockTasks: Task[] = [
@@ -61,5 +61,19 @@ describe('filterByStatus — lista vacía', () => {
   it('retorna array vacío si no hay tareas', () => {
     expect(filterByStatus([], true)).toHaveLength(0)
     expect(filterByStatus([], false)).toHaveLength(0)
+  })
+})
+
+describe('applyTitleUpdate', () => {
+  it('actualiza el título de la tarea', () => {
+    const task = mockTasks[1]
+    const updated = applyTitleUpdate(task, 'Nuevo título')
+    expect(updated.title).toBe('Nuevo título')
+    expect(updated.id).toBe(task.id)
+  })
+
+  it('recorta espacios del nuevo título', () => {
+    const updated = applyTitleUpdate(mockTasks[0], '  Título con espacios  ')
+    expect(updated.title).toBe('Título con espacios')
   })
 })

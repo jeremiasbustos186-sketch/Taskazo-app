@@ -17,10 +17,11 @@ Gestor estratégico de tareas. Organizá tu día, completá lo que importa y man
 
 - Registro e inicio de sesión (email/contraseña y Google)
 - Rutas protegidas con redirección automática
-- CRUD completo de tareas (crear, completar, eliminar)
+- CRUD completo de tareas (crear, editar, completar, eliminar)
+- Edición inline: click en ✏️ o doble click sobre el título
 - Progreso visual con barra y estadísticas
 - Envío de resumen por email con AWS SES
-- 10 tests unitarios pasando
+- 18 tests unitarios pasando
 
 ## Instalación local
 

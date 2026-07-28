@@ -392,6 +392,21 @@ body {
   color: #f87171;
 }
 
+.btn-edit:hover {
+  color: #a78bfa !important;
+}
+
+.task-edit-input {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid #7c3aed;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
+  outline: none;
+}
+
 .email-btn {
   margin-top: 1.5rem;
   width: 100%;
