@@ -94,7 +94,7 @@ function TasksPage() {
       if (!res.ok) throw new Error()
       setEmailMsg('✅ Email enviado a ' + user.email)
     } catch {
-      setEmailMsg('❌ No se pudo enviar el email')
+      setEmailMsg('❌ No se pudo enviar el email. El servicio de correo solo funciona con emails verificados por ahora.')
     } finally {
       setSendingEmail(false)
     }
