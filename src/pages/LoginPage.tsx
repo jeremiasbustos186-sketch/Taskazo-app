@@ -47,42 +47,65 @@ function LoginPage() {
   }
 
   return (
-    <div className="auth-container">
-      <h1>Iniciar sesión</h1>
+    <div className="auth-page">
+      {/* Panel izquierdo — branding */}
+      <div className="auth-brand">
+        <div className="auth-brand-logo">⚡ Taskazo</div>
+        <h1>Tus tareas,<br /><span>bajo control.</span></h1>
+        <p>Organizá tu día, completá lo que importa y mantené el foco sin distracciones.</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="auth-form">
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          disabled={loading}
-        />
+      {/* Panel derecho — formulario */}
+      <div className="auth-form-side">
+        <div className="auth-container">
+          <h2>Iniciar sesión</h2>
+          <p className="auth-tagline">Ingresá a tu cuenta para ver tus tareas.</p>
 
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          disabled={loading}
-        />
+          <button onClick={handleGoogle} disabled={loading} className="btn-google">
+            🔑 Continuar con Google
+          </button>
 
-        {error && <p className="auth-error" role="alert">{error}</p>}
+          <div className="auth-divider">o con email</div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Ingresando...' : 'Iniciar sesión'}
-        </button>
-      </form>
+          {error && <p className="auth-error" role="alert">{error}</p>}
 
-      <button onClick={handleGoogle} disabled={loading} className="btn-google">
-        Continuar con Google
-      </button>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="tu@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
 
-      <p>¿No tenés cuenta? <Link to="/register">Registrate</Link></p>
+            <div>
+              <label htmlFor="password">Contraseña</label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Tu contraseña"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <button type="submit" disabled={loading}>
+              {loading ? 'Ingresando...' : 'Iniciar sesión'}
+            </button>
+          </form>
+
+          <p className="auth-footer">
+            ¿No tenés cuenta? <Link to="/register">Registrate</Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

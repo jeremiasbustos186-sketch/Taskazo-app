@@ -6,20 +6,18 @@ import type { Task } from '../types'
 function TasksPage() {
   const { user, logout } = useAuth()
 
-  // Estado de la lista de tareas
   const [tasks, setTasks] = useState<Task[]>([])
   const [loadingTasks, setLoadingTasks] = useState(true)
   const [tasksError, setTasksError] = useState('')
-
-  // Estado del formulario para agregar tarea
   const [newTitle, setNewTitle] = useState('')
   const [adding, setAdding] = useState(false)
-
-  // Estado del botón de email
   const [sendingEmail, setSendingEmail] = useState(false)
   const [emailMsg, setEmailMsg] = useState('')
 
-  // Cargar tareas al montar el componente (useEffect con [])
+  const completed = tasks.filter(t => t.completed)
+  const pending = tasks.filter(t => !t.completed)
+  const progress = tasks.length > 0 ? Math.round((completed.length / tasks.length) * 100) : 0
+
   useEffect(() => {
     if (!user) return
     fetchTasks()
@@ -46,7 +44,7 @@ function TasksPage() {
     try {
       await addTask(newTitle.trim(), user!.uid)
       setNewTitle('')
-      await fetchTasks() // recarga la lista
+      await fetchTasks()
     } finally {
       setAdding(false)
     }
@@ -62,10 +60,6 @@ function TasksPage() {
   async function handleDelete(taskId: string) {
     await deleteTask(taskId)
     setTasks(prev => prev.filter(t => t.id !== taskId))
-  }
-
-  async function handleLogout() {
-    await logout()
   }
 
   async function handleSendEmail() {
@@ -88,58 +82,106 @@ function TasksPage() {
   }
 
   return (
-    <div className="tasks-container">
-      <div className="tasks-header">
+    <div>
+      <nav className="tasks-navbar">
+        <span className="tasks-navbar-logo">⚡ Taskazo</span>
+        <button onClick={() => logout()} className="btn-logout">Cerrar sesión</button>
+      </nav>
+
+      <div className="tasks-container">
         <h1>Mis Tareas</h1>
-        <button onClick={handleLogout} className="btn-logout">Cerrar sesión</button>
-      </div>
+        <p className="tasks-subtitle">Organizá tu día, un task a la vez.</p>
 
-      {/* Formulario para agregar tarea */}
-      <form onSubmit={handleAdd} className="task-form">
-        <input
-          type="text"
-          value={newTitle}
-          onChange={e => setNewTitle(e.target.value)}
-          placeholder="Nueva tarea..."
-          disabled={adding}
-        />
-        <button type="submit" disabled={adding || !newTitle.trim()}>
-          {adding ? '...' : 'Agregar'}
+        {/* Stats */}
+        {tasks.length > 0 && (
+          <div className="tasks-stats">
+            <div className="stat-item">
+              <span className="stat-number">{tasks.length}</span>
+              <span className="stat-label">Total</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number stat-pending">{pending.length}</span>
+              <span className="stat-label">Pendientes</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number stat-done">{completed.length}</span>
+              <span className="stat-label">Completadas</span>
+            </div>
+            <div className="stat-progress">
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${progress}%` }} />
+              </div>
+              <span className="progress-label">{progress}% completado</span>
+            </div>
+          </div>
+        )}
+
+        {/* Formulario */}
+        <form onSubmit={handleAdd} className="task-form">
+          <input
+            type="text"
+            value={newTitle}
+            onChange={e => setNewTitle(e.target.value)}
+            placeholder="¿Qué tenés que hacer hoy?"
+            disabled={adding}
+          />
+          <button type="submit" disabled={adding || !newTitle.trim()}>
+            {adding ? '...' : '+ Agregar'}
+          </button>
+        </form>
+
+        {loadingTasks && <p className="tasks-loading">Cargando tareas...</p>}
+        {tasksError && <p className="error-msg">{tasksError}</p>}
+
+        {!loadingTasks && tasks.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">📋</div>
+            <p>No tenés tareas todavía.</p>
+            <p className="empty-sub">¡Agregá una para empezar!</p>
+          </div>
+        )}
+
+        {/* Pendientes */}
+        {pending.length > 0 && (
+          <>
+            <p className="section-label">Pendientes</p>
+            <ul className="task-list">
+              {pending.map(task => (
+                <li key={task.id} className="task-item">
+                  <input type="checkbox" checked={false} onChange={() => handleToggle(task)} />
+                  <span>{task.title}</span>
+                  <button onClick={() => handleDelete(task.id)}>🗑</button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {/* Completadas */}
+        {completed.length > 0 && (
+          <>
+            <p className="section-label section-label--done">Completadas</p>
+            <ul className="task-list">
+              {completed.map(task => (
+                <li key={task.id} className="task-item task-item--done">
+                  <input type="checkbox" checked={true} onChange={() => handleToggle(task)} />
+                  <span className="done">{task.title}</span>
+                  <button onClick={() => handleDelete(task.id)}>🗑</button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        <button
+          className="email-btn"
+          onClick={handleSendEmail}
+          disabled={sendingEmail || tasks.length === 0}
+        >
+          {sendingEmail ? 'Enviando...' : '📧 Enviar resumen por email'}
         </button>
-      </form>
-
-      {/* Lista de tareas */}
-      {loadingTasks && <p>Cargando tareas...</p>}
-      {tasksError && <p className="error-msg">{tasksError}</p>}
-
-      {!loadingTasks && tasks.length === 0 && (
-        <p>No tenés tareas todavía. ¡Agregá una!</p>
-      )}
-
-      <ul className="task-list">
-        {tasks.map(task => (
-          <li key={task.id} className="task-item">
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={() => handleToggle(task)}
-            />
-            <span className={task.completed ? 'done' : ''}>
-              {task.title}
-            </span>
-            <button onClick={() => handleDelete(task.id)}>🗑</button>
-          </li>
-        ))}
-      </ul>
-
-      <button
-        className="email-btn"
-        onClick={handleSendEmail}
-        disabled={sendingEmail || tasks.length === 0}
-      >
-        {sendingEmail ? 'Enviando...' : '📧 Enviar resumen por email'}
-      </button>
-      {emailMsg && <p className={emailMsg.startsWith('✅') ? 'success-msg' : 'error-msg'}>{emailMsg}</p>}
+        {emailMsg && <p className={emailMsg.startsWith('✅') ? 'success-msg' : 'error-msg'}>{emailMsg}</p>}
+      </div>
     </div>
   )
 }
