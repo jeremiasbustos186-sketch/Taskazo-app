@@ -1,7 +1,7 @@
 import {
   collection,
   addDoc,
-  getDocs,
+  onSnapshot,
   updateDoc,
   deleteDoc,
   doc,
@@ -15,18 +15,30 @@ import type { Task } from '../types'
 
 const COLLECTION = 'tasks'
 
-// Traer todas las tareas del usuario
-export async function getTasks(userId: string): Promise<Task[]> {
+// Escuchar tareas en tiempo real con onSnapshot
+// Devuelve una función unsubscribe para limpiar el listener
+export function subscribeToTasks(
+  userId: string,
+  onData: (tasks: Task[]) => void,
+  onError: (err: unknown) => void
+): () => void {
   const q = query(
     collection(db, COLLECTION),
     where('userId', '==', userId),
     orderBy('createdAt', 'desc')
   )
-  const snapshot = await getDocs(q)
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...(doc.data() as Omit<Task, 'id'>),
-  }))
+  const unsubscribe = onSnapshot(
+    q,
+    snapshot => {
+      const tasks = snapshot.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<Task, 'id'>),
+      }))
+      onData(tasks)
+    },
+    onError
+  )
+  return unsubscribe
 }
 
 // Crear una tarea nueva

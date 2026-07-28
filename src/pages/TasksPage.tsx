@@ -1,6 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { useAuth } from '../lib/Authenticator'
-import { getTasks, addTask, toggleTask, deleteTask } from '../lib/tasks'
+import { subscribeToTasks, addTask, toggleTask, deleteTask } from '../lib/tasks'
 import type { Task } from '../types'
 
 function TasksPage() {
@@ -20,22 +20,25 @@ function TasksPage() {
 
   useEffect(() => {
     if (!user) return
-    fetchTasks()
-  }, [user])
-
-  async function fetchTasks() {
     setLoadingTasks(true)
     setTasksError('')
-    try {
-      const data = await getTasks(user!.uid)
-      setTasks(data)
-    } catch (error) {
-      console.error('Error al cargar tareas:', error)
-      setTasksError('No se pudieron cargar las tareas.')
-    } finally {
-      setLoadingTasks(false)
-    }
-  }
+
+    // onSnapshot devuelve una función unsubscribe — la usamos como cleanup del useEffect
+    const unsubscribe = subscribeToTasks(
+      user.uid,
+      (data) => {
+        setTasks(data)
+        setLoadingTasks(false)
+      },
+      (error) => {
+        console.error('Error al cargar tareas:', error)
+        setTasksError('No se pudieron cargar las tareas.')
+        setLoadingTasks(false)
+      }
+    )
+
+    return unsubscribe // cleanup: desuscribe el listener cuando el componente se desmonta
+  }, [user])
 
   async function handleAdd(e: FormEvent) {
     e.preventDefault()
@@ -43,8 +46,7 @@ function TasksPage() {
     setAdding(true)
     try {
       await addTask(newTitle.trim(), user!.uid)
-      setNewTitle('')
-      await fetchTasks()
+      setNewTitle('') // onSnapshot actualiza la lista automáticamente
     } finally {
       setAdding(false)
     }
@@ -52,14 +54,12 @@ function TasksPage() {
 
   async function handleToggle(task: Task) {
     await toggleTask(task.id, !task.completed)
-    setTasks(prev =>
-      prev.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t)
-    )
+    // onSnapshot actualiza la UI automáticamente
   }
 
   async function handleDelete(taskId: string) {
     await deleteTask(taskId)
-    setTasks(prev => prev.filter(t => t.id !== taskId))
+    // onSnapshot actualiza la UI automáticamente
   }
 
   async function handleSendEmail() {
