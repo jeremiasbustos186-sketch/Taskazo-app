@@ -71,6 +71,27 @@ api/
 └── send-email.ts   # Vercel Function con AWS SES
 ```
 
+## Uso Crítico y Responsable de IA
+
+Este proyecto lo arranqué sin saber prácticamente nada de Firebase, AWS ni cómo conectar un backend serverless con el frontend. Todo fue nuevo al mismo tiempo, y eso fue lo más difícil: no había un solo concepto complicado, sino que todo era complicado a la vez.
+
+Mi forma de trabajar fue combinar las videoclases del bootcamp con asistencia de IA (Claude). Las clases me daban el contexto general — entender qué es el Context API, por qué existe el patrón de rutas protegidas, cómo funciona Firestore por debajo. La IA me ayudaba a implementarlo paso a paso en el proyecto real, sin saltearme la comprensión.
+
+### Cómo usé la IA concretamente
+
+- **De a un módulo por vez:** nunca pedí "haceme la app". Fui construyendo Auth primero, después Firestore, después SES, tests y deploy. Cada parte la entendí antes de avanzar a la siguiente.
+- **Pedir que me explique mientras construye:** cuando no entendía por qué se usaba `onAuthStateChanged` con cleanup, o por qué las variables de Firebase llevan prefijo `VITE_`, paraba y preguntaba. No avancé con código que no podía leer.
+- **Los errores los analicé yo primero:** cuando apareció `ERR_BLOCKED_BY_CLIENT` en el browser, o el índice de Firestore que faltaba, o el `TS2769` en vite.config — leí el mensaje, traté de entender qué decía, y después busqué solución. No copié y pegué a ciegas.
+- **Las videoclases como base:** cada vez que la IA me explicaba algo, lo contrastaba con lo que había visto en clase. Si no me cerraba, volvía a ver el video. Eso me ayudó a entender la diferencia entre "código que funciona" y "código que entiendo".
+
+### Decisiones que entiendo y puedo explicar
+
+- **Context API + `useAuth`** en lugar de pasar props por toda la jerarquía: cualquier componente puede saber si hay usuario logueado sin que sus padres le pasen esa info manualmente.
+- **`RequireAuth` como wrapper:** la lógica de "¿puede entrar acá?" vive en un solo lugar, no mezclada con cada página.
+- **`tasks.ts` separado de la UI:** si mañana cambio Firestore por otra base de datos, las páginas no se tocan.
+- **Vercel Function para el email:** las credenciales de AWS nunca tocan el frontend. El usuario no puede verlas aunque abra DevTools.
+- **`.env` con dos tipos de variables:** las de Firebase con prefijo `VITE_` porque el browser las necesita, las de AWS sin prefijo porque solo las lee el servidor.
+
 ---
 
 Proyecto integrador del Módulo 4 — Bootcamp Henry.

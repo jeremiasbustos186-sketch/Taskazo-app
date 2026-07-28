@@ -46,3 +46,20 @@ describe('countCompleted', () => {
     expect(countCompleted(pending)).toBe(0)
   })
 })
+
+describe('isValidTitle — casos borde', () => {
+  it('retorna false para título con solo tabs', () => {
+    expect(isValidTitle('\t\t')).toBe(false)
+  })
+
+  it('retorna true para título con un solo caracter', () => {
+    expect(isValidTitle('x')).toBe(true)
+  })
+})
+
+describe('filterByStatus — lista vacía', () => {
+  it('retorna array vacío si no hay tareas', () => {
+    expect(filterByStatus([], true)).toHaveLength(0)
+    expect(filterByStatus([], false)).toHaveLength(0)
+  })
+})
